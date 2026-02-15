@@ -65,7 +65,7 @@ function shouldSkip(node) {
 
 
 // We are gonna walk through the tree instead of nuking the code
-function replacedocument(root) {
+function replaceDocument(root) {
 
     const walker = document.createTreeWalker(
         root,
