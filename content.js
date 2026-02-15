@@ -70,7 +70,7 @@ function replacedocument(root) {
     const walker = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT,
-        null
+        null,
         false
     );
 
