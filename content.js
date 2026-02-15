@@ -7,6 +7,15 @@ const WordFixer = {
     "these": "dese",
     "those": "dose",
     "with": "wit",
+    // Adding more cs words
+    "physics": "phys*cs",
+    "shower": "sh*wer",
+    "grass": "gr*ss",
+    "exam": "ex*m",
+    "homework": "h*mework",
+    "group": "gr*up",
+    "program": "pr*ject",
+    "outside": "outs*de",
 }
 
 // lmaoooo we just exploded the website whoops
