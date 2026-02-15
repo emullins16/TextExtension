@@ -48,6 +48,7 @@ function fixText(text) {
     text = text
         .replace(/r/g, 'w')
         .replace(/R/g, 'W')
+        .replace(/l/g, 'w')
         .replace(/ll/g, 'ww')
         .replace(/LL/g, 'WW');
     return text;
