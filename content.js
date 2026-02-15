@@ -63,39 +63,61 @@ function shouldSkip(node) {
     return false;
 }
 
+// check if its turned on or not, luckily we can store this... allegedly locally
+chrome.storage.local.get(["enabled"], result => {
+  if (!result.enabled) return; 
+  runReplacement(); 
+});
 
 // We are gonna walk through the tree instead of nuking the code
 function replaceDocument(root) {
-
     const walker = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT,
         null,
         false
     );
-
     let node;
-
     while (node = walker.nextNode()) {
         if (shouldSkip(node)) continue;
         node.textContent = fixText(node.textContent);
     }
 }
 
-// Run it (please dont break please dont break)
-replaceDocument(document.body);
 
-const observer = new MutationObserver(mutations => {
+// start/stop replacement based on toggle
+function startObserver() {
+    replaceDocument(document.body);
 
-    mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-            replaceDocument(node);
+    observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    replaceDocument(node);
+                }
+            });
         });
     });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function stopObserver() {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+}
+
+
+chrome.storage.onChanged.addListener(changes => {
+  if (changes.enabled) {
+    if (changes.enabled.newValue) startObserver();
+    else stopObserver();
+  }
 });
 
-// Observe the entire body for changes then update?
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
+
+chrome.storage.local.get(["enabled"], result => {
+  if (result.enabled ?? true) startObserver();
 });
