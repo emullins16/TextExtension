@@ -9,6 +9,24 @@ const WordFixer = {
     "with": "wit",
 }
 
+// lmaoooo we just exploded the website whoops
+const skipTags = new Set([
+  "SCRIPT",
+  "STYLE",
+  "NOSCRIPT",
+  "TEXTAREA",
+  "INPUT",
+  "CODE",
+  "PRE",
+  "KBD",
+  "SAMP",
+  "VAR",
+  "SELECT",
+  "OPTION"
+]);
+
+
+
 // Function that actually replaces the words
 function fixText(text) {
 
@@ -35,38 +53,49 @@ function fixText(text) {
     return text;
 }
 
-// Talk through the DOM and replace text nodes
-function replaceText(node) {
-    
-    // try our hardest to not explode the web page by replacing text in script/style tags or input fields
-    if (
-        node.nodename === 'SCRIPT' ||
-        node.nodename === 'STYLE' ||
-        node.nodename === 'NOSCRIPT' ||
-        node.nodename === 'input' ||
-        node.nodename === 'textarea' ||
-        node.nodename === 'code' ||
-        node.nodename === 'pre'
-    ) {
-        return;
+function shouldSkip(node) {
+    if (!node.parentNode) return true;
+    if (skipTags.has(node.parentNode.nodeName))
+        return true;
+    if (node.parentNode.isContentEditable) {
+        return true;
     }
-    
-    if (node.nodeType === Node.TEXT_NODE) {
+    return false;
+}
+
+
+// We are gonna walk through the tree instead of nuking the code
+function replacedocument(root) {
+
+    const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        null
+        false
+    );
+
+    let node;
+
+    while (node = walker.nextNode()) {
+        if (shouldSkip(node)) continue;
         node.textContent = fixText(node.textContent);
-    } 
-    else {
-        node.childNodes.forEach(replaceText);
     }
 }
 
-replaceText(document.body);
+// Run it (please dont break please dont break)
+replaceDocument(document.body);
 
-// Observe for changes in the DOM to replace new text
-new MutationObserver(mutations => {
+const observer = new MutationObserver(mutations => {
+
     mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(replaceText);
+        mutation.addedNodes.forEach(node => {
+            replaceDocument(node);
+        });
     });
-}).observe(document.body, { 
-        childList: true,
-        subtree: true 
-    });
+});
+
+// Observe the entire body for changes then update?
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
